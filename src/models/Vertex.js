@@ -1,11 +1,11 @@
-class Vertex{
-    value;
+class City {
     name;
+    distance;
 
-    constructor(value, name){
-        this.name=name;
-        this.value=value;
+    constructor(name, distance) {
+        this.name = name;
+        this.distance = distance;
     }
 }
 
-export default Vertex;
+export default City;

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Ciudades map</title>
+</head>
+<body>
+    <header class="header">
+        <h1 class="header__title">Ciudades y rutas</h1>
+    </header>
+   
+    
+    <main class="main">
+        <!-- Seccion Agregar ciudad -->
+        <section class="main__section main__section--add-city">
+            <h2 class="main__section-title">Agregar ciudad</h2>
+            <input type="text" class="main__input main__input--city-name" placeholder="Nombre de la ciudad (vertice)">
+            <button class="main__button main__button--add-city">Agregar</button>
+        </section>
+    
+        <!-- Seccion agregar Aritas -->
+        <section class="main__section main__section--add-route">
+            <h2 class="main__section-title">Agregar Ruta (Arista)</h2>
+            <input type="text" class="main__input main__input--start-city" placeholder="Inicio">
+            <input type="text" class="main__input main__input--end-city" placeholder="Fin">
+            <input type="text" class="main__input main__input--distance" placeholder="Distancia">
+            <button class="main__button main__button--add-route">Agregar</button>
+        </section>
+    
+        <!-- Seccion (DFS) -->
+        <section class="main__section main__section--show-cities">
+            <h2 class="main__section-title">DFS</h2>
+            <ul class="main__list main__list--cities"></ul>
+            <input type="text" class="main__input main__input--start-dfs" placeholder="Inicio">
+            <button class="main__button main__button--show-cities">Mostrar ciudades</button>
+        </section>
+
+        <!-- Seccion (Dijkstra) -->
+        <section class="main__section main__section--show-routes">
+            <h2 class="main__section-title">Dijkstra</h2>
+            <input type="text" class="main__input main__input--start-route" placeholder="Inicio">
+            <ul class="main__list main__list--shortest-routes"></ul>
+            <button class="main__button main__button--show-routes">Ver la ruta más corta</button>
+        </section>
+    </main>
+    
+    <script type="module" src="/src/controllers/script.js"></script>
+</body>
+</html>

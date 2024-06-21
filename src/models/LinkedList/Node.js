@@ -1,18 +1,16 @@
 class Node {
-    #key
-    #next
-    #weight
+    #value;
+    #next;
 
-    constructor(key,weight){
-        this.#key=key;
-        this.#next=null;
-        this.#weight=weight;
+    constructor(value) {
+        this.#value = value;
+        this.#next = null;
     }
-    
-    getKey(){
-        return this.#key;
+
+    get value() {
+        return this.#value;
     }
-    
+
     set next(node) {
         this.#next = node;
     }
@@ -22,4 +20,4 @@ class Node {
     }
 }
 
-export default Node
+export default Node;

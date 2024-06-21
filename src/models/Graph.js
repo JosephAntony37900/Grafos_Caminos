@@ -1,145 +1,105 @@
-import LinkedList from "./LinkedList/LinkedList.js";
+
+import { LinkedList } from "./LinkedList/LinkedList.js";
 
 export default class Graph {
-    #listaAdyacencia
-    #map
-    #maprev
+    #vertices = [];
+    #cityMap = new Map();
+    #adjacencyList = [];
 
-    constructor() {
-        this.#map = new Map();
-        this.#listaAdyacencia = [];
-        this.#maprev = new Map();
+    constructor() {}
+
+    addCity(cityName) {
+        this.#vertices.push(new LinkedList());
+        this.#cityMap.set(cityName, this.#vertices.length - 1);
+        this.#adjacencyList.push([]);
+        return cityName;
     }
 
-    addVertice(key) {
-        if (this.#map.has(key)) {
-            console.log(key + " ya existe");
-            return false;
-        } else {
-            let lista = new LinkedList();
-            lista.addList(key);
-            this.#listaAdyacencia.push(lista);
-            this.#map.set(key, this.#listaAdyacencia.length - 1);
-            this.#maprev.set(this.#listaAdyacencia.length - 1, key);
-            console.log(this.#listaAdyacencia[this.#listaAdyacencia.length - 1]);
+    addRoute(startCity, endCity, distance = 1) {
+        if (this.#cityMap.has(startCity) && this.#cityMap.has(endCity)) {
+            this.#vertices[this.#cityMap.get(startCity)].insert(endCity, distance);
+            this.#vertices[this.#cityMap.get(endCity)].insert(startCity, distance);
+            this.#adjacencyList[this.#cityMap.get(startCity)][this.#cityMap.get(endCity)] = distance;
+            this.#adjacencyList[this.#cityMap.get(endCity)][this.#cityMap.get(startCity)] = distance;
             return true;
         }
+        return false;
     }
 
-    addVertices(...vertices) {
-        let lista;
-        for (let value of vertices) {
-            lista = new LinkedList();
-            lista.addList(value);
-            this.#listaAdyacencia.push(lista);
-            this.#map.set(value, this.#listaAdyacencia.length - 1);
-            this.#maprev.set(this.#listaAdyacencia.length - 1, value);
-            console.log(this.#listaAdyacencia[this.#listaAdyacencia.length - 1]);
-        }
+    hasCity(cityName) {
+        return this.#cityMap.has(cityName);
     }
 
-    addConexion(start, end, weight = 1) {
-        if (this.#map.has(start) && this.#map.has(end)) {
-            this.#listaAdyacencia[this.#map.get(start)].addList(end, weight);
-            console.log("Conexión añadida");
-            return true;
-        } else {
-            console.log("Error al añadir conexión");
-            return false;
-        }
+    depthFirstSearch(startCity, callback) {
+        const visited = new Set();
+        this.#dfs(startCity, visited, null, 0, callback);
     }
 
-    bfs(callback) {
-        let queue = [];
-        let visited = new Array(this.#listaAdyacencia.length).fill(false);
-
-        queue.push(this.#maprev.get(0));
-
-        while (queue.length > 0) {
-            let val = queue.shift();
-            callback(val);
-            visited[this.#map.get(val)] = true;
-            this.#listaAdyacencia[this.#map.get(val)].run((data) => {
-                if (!visited[this.#map.get(data)]) {
-                    queue.push(data);
+    #dfs(city, visited, previousCity = null, previousDistance = 0, callback) {
+        if (!visited.has(city)) {
+            if (previousCity !== null) {
+                callback(`${previousCity} -> ${city} (Distance: ${previousDistance})`);
+            } else {
+                callback(city);
+            }
+            visited.add(city);
+            const cityIndex = this.#cityMap.get(city);
+            const neighbors = this.#vertices[cityIndex];
+            let currentNode = neighbors.getElementAt(0);
+            while (currentNode !== undefined && currentNode !== null) {
+                const neighborCity = currentNode.value.name;
+                const distance = currentNode.value.distance;
+                if (!visited.has(neighborCity)) {
+                    this.#dfs(neighborCity, visited, city, distance, callback);
                 }
-            });
+                currentNode = currentNode.next;
+            }
         }
     }
 
-    dfs(callback) {
-        let stack = [];
-        let visited = new Array(this.#listaAdyacencia.length).fill(false);
-
-        stack.push(this.#maprev.get(0));
-
-        while (stack.length > 0) {
-            let val = stack.pop();
-            callback(val);
-            visited[this.#map.get(val)] = true;
-            this.#listaAdyacencia[this.#map.get(val)].run((data) => {
-                if (!visited[this.#map.get(data)]) {
-                    stack.push(data);
-                }
-            });
-        }
-    }
-
-    vertexExists(vertex) {
-        return this.#map.has(vertex);
-    }
-
-    getMap() {
-        return this.#map;
-    }
-
-    getMapRev() {
-        return this.#maprev;
-    }
-
-    getListaAdyacencia() {
-        return this.#listaAdyacencia;
-    }
-
-    dijkstra(start, end) {
+    dijkstra(startCity) {
         const distances = {};
-        const prev = {};
-        const pq = [];
-
-        for (let i = 0; i < this.#listaAdyacencia.length; i++) {
-            let vertex = this.#maprev.get(i);
-            distances[vertex] = Infinity;
-            prev[vertex] = null;
+        const visited = new Set();
+        const unvisited = new Set(this.#cityMap.keys());
+        
+        // Inicializa distancia
+        for (const city of this.#cityMap.keys()) {
+            distances[city] = Infinity;
         }
+        distances[startCity] = 0;
 
-        distances[start] = 0;
-        pq.push({ element: start, priority: 0 });
-
-        while (pq.length > 0) {
-            pq.sort((a, b) => a.priority - b.priority);
-            const { element: u } = pq.shift();
-
-            if (u === end) break;
-
-            const currentIndex = this.#map.get(u);
-            this.#listaAdyacencia[currentIndex].run((v, weight) => {
-                const alt = distances[u] + weight;
-                if (alt < distances[v]) {
-                    distances[v] = alt;
-                    prev[v] = u;
-                    pq.push({ element: v, priority: alt });
+        while (unvisited.size > 0) {
+            //Encuentra el nodo no visitado con la distancia más pequeña
+            let currentCity = null;
+            for (const city of unvisited) {
+                if (currentCity === null || distances[city] < distances[currentCity]) {
+                    currentCity = city;
                 }
-            });
+            }
+
+            if (distances[currentCity] === Infinity) {
+                break;
+            }
+
+            unvisited.delete(currentCity);
+            visited.add(currentCity);
+
+            //Actualiza distancias vecinas
+            const currentIndex = this.#cityMap.get(currentCity);
+            const neighbors = this.#vertices[currentIndex];
+            let currentNode = neighbors.getElementAt(0);
+            while (currentNode !== null) {
+                const neighborCity = currentNode.value.name;
+                if (!visited.has(neighborCity)) {
+                    const newDistance = distances[currentCity] + currentNode.value.distance;
+                    if (newDistance < distances[neighborCity]) {
+                        distances[neighborCity] = newDistance;
+                    }
+                }
+                currentNode = currentNode.next;
+            }
         }
 
-        const path = [];
-        let u = end;
-        while (prev[u] !== null) {
-            path.unshift(u);
-            u = prev[u];
-        }
-        path.unshift(start);
-
-        return { distance: distances[end], path };
+        return distances;
     }
 }

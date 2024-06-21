@@ -1,88 +1,90 @@
-import Graph from "../models/Graph.js";
+import { cityGraph } from "./dependencies.js";
 
-let g = new Graph();
+document.addEventListener('DOMContentLoaded', () => {
+    const cityNameInput = document.querySelector('.main__input--city-name');
+    const addCityButton = document.querySelector('.main__button--add-city');
+    const cityList = document.querySelector('.main__list--cities');
 
-const vertexForm = document.getElementById('vertex-form');
-const edgeForm = document.getElementById('edge-form');
-const graphOutput = document.getElementById('graph-output');
-const bfsButton = document.getElementById('bfs-button');
-const dfsButton = document.getElementById('dfs-button');
-const dijkstraButton = document.getElementById('dijkstra-button'); // Añadir este botón en el HTML
-const startVertexTraverse = document.getElementById('start-vertex-traverse');
-const endVertexTraverse = document.getElementById('end-vertex-traverse');
-const resultsDiv = document.getElementById('results');
+    const startCityInput = document.querySelector('.main__input--start-city');
+    const endCityInput = document.querySelector('.main__input--end-city');
+    const distanceInput = document.querySelector('.main__input--distance');
+    const addRouteButton = document.querySelector('.main__button--add-route');
 
-vertexForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const vertexName = document.getElementById('vertex-name').value;
-    if (vertexName && g.addVertice(vertexName)) {
-        alert(`Vertex ${vertexName} added successfully`);
-        updateGraphOutput();
-    } else {
-        alert('Failed to add vertex. It might already exist.');
+    const startDFSInput = document.querySelector('.main__input--start-dfs');
+    const showCitiesButton = document.querySelector('.main__button--show-cities');
+
+    const startRouteInput = document.querySelector('.main__input--start-route');
+    const showRoutesButton = document.querySelector('.main__button--show-routes');
+    const shortestRoutesList = document.querySelector('.main__list--shortest-routes');
+
+    function updateCityList(content) {
+        const li = document.createElement('li');
+        li.textContent = content;
+        cityList.appendChild(li);
     }
-});
 
-edgeForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const startVertex = document.getElementById('start-vertex').value;
-    const endVertex = document.getElementById('end-vertex').value;
-    const weight = parseInt(document.getElementById('weight').value);
-
-    if (startVertex && endVertex && g.addConexion(startVertex, endVertex, weight)) {
-        alert(`Edge from ${startVertex} to ${endVertex} with weight ${weight} added successfully`);
-        updateGraphOutput();
-    } else {
-        alert('Failed to add edge. Please check the vertices.');
-    }
-});
-
-bfsButton.addEventListener('click', () => {
-    const startVertex = startVertexTraverse.value;
-    resultsDiv.innerHTML = '';
-    if (g.vertexExists(startVertex)) {
-        g.bfs((n) => {
-            resultsDiv.innerHTML += `<p>${n}</p>`;
-        });
-    } else {
-        alert('Please enter a valid starting vertex.');
-    }
-});
-
-dfsButton.addEventListener('click', () => {
-    const startVertex = startVertexTraverse.value;
-    resultsDiv.innerHTML = '';
-    if (g.vertexExists(startVertex)) {
-        g.dfs((n) => {
-            resultsDiv.innerHTML += `<p>${n}</p>`;
-        });
-    } else {
-        alert('Please enter a valid starting vertex.');
-    }
-});
-
-dijkstraButton.addEventListener('click', () => {
-    const startVertex = startVertexTraverse.value;
-    const endVertex = endVertexTraverse.value;
-    resultsDiv.innerHTML = '';
-    if (g.vertexExists(startVertex) && g.vertexExists(endVertex)) {
-        const { distance, path } = g.dijkstra(startVertex, endVertex);
-        if (distance === Infinity) {
-            resultsDiv.innerHTML = `Distance from ${startVertex} to ${endVertex}: Infinity<br>Path: ${endVertex}`;
-        } else {
-            resultsDiv.innerHTML = `Distance from ${startVertex} to ${endVertex}: ${distance}<br>Path: ${path.join(' -> ')}`;
+    function updateRouteList(routes) {
+        shortestRoutesList.innerHTML = '';
+        for (const [city, distance] of Object.entries(routes)) {
+            const li = document.createElement('li');
+            li.textContent = `${city} (Distance: ${distance})`;
+            shortestRoutesList.appendChild(li);
         }
-    } else {
-        alert('Please enter valid start and end vertices.');
     }
+
+    addCityButton.addEventListener('click', () => {
+        const cityName = cityNameInput.value.trim();
+        if (cityName !== '') {
+            cityGraph.addCity(cityName);
+            console.log(`City added: ${cityName}`);
+            cityNameInput.value = '';
+        }
+    });
+
+    addRouteButton.addEventListener('click', () => {
+        const startCity = startCityInput.value.trim();
+        const endCity = endCityInput.value.trim();
+        const distance = parseFloat(distanceInput.value.trim());
+
+        if (startCity !== '' && endCity !== '' && !isNaN(distance)) {
+            cityGraph.addRoute(startCity, endCity, distance);
+            console.log(`Route between ${startCity} and ${endCity} with distance: ${distance}`);
+            startCityInput.value = '';
+            endCityInput.value = '';
+            distanceInput.value = '';
+        }
+    });
+
+    showCitiesButton.addEventListener('click', () => {
+        cityList.innerHTML = '';
+        const callbackDFS = (result) => {
+            console.log(`DFS: ${result}`);
+            updateCityList(result);
+        };
+
+        const startCity = startDFSInput.value.trim();
+        console.log(`Start DFS: ${startCity}`);
+        
+        if (!cityGraph.hasCity(startCity)) {
+            alert("City does not exist in the graph");
+            return;
+        }
+        
+        cityGraph.depthFirstSearch(startCity, callbackDFS);
+    });
+
+    showRoutesButton.addEventListener('click', () => {
+        shortestRoutesList.innerHTML = '';
+        const startCity = startRouteInput.value.trim();
+        console.log(`Start Dijkstra: ${startCity}`);
+
+        if (!cityGraph.hasCity(startCity)) {
+            alert("City does not exist in the graph");
+            return;
+        }
+
+        const result = cityGraph.dijkstra(startCity);
+        console.log(`Dijkstra: ${JSON.stringify(result)}`);
+        updateRouteList(result);
+    });
 });
-
-function updateGraphOutput() {
-    graphOutput.textContent = JSON.stringify({
-        listaAdyacencia: g.getListaAdyacencia(),
-        map: Array.from(g.getMap().entries()),
-        maprev: Array.from(g.getMapRev().entries())
-    }, null, 2);
-}
-
-updateGraphOutput();
