@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         shortestRoutesList.innerHTML = '';
         for (const [city, distance] of Object.entries(routes)) {
             const li = document.createElement('li');
-            li.textContent = `${city} (Distance: ${distance})`;
+            li.textContent = `${city} (Distancia: ${distance})`;
             shortestRoutesList.appendChild(li);
         }
     }
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const cityName = cityNameInput.value.trim();
         if (cityName !== '') {
             cityGraph.addCity(cityName);
-            console.log(`City added: ${cityName}`);
+            console.log(`Ciudad agregada: ${cityName}`);
             cityNameInput.value = '';
         }
     });
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (startCity !== '' && endCity !== '' && !isNaN(distance)) {
             cityGraph.addRoute(startCity, endCity, distance);
-            console.log(`Route between ${startCity} and ${endCity} with distance: ${distance}`);
+            console.log(`Ruta entre ${startCity} y ${endCity} con distancia de: ${distance}`);
             startCityInput.value = '';
             endCityInput.value = '';
             distanceInput.value = '';
@@ -63,10 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const startCity = startDFSInput.value.trim();
-        console.log(`Start DFS: ${startCity}`);
+        console.log(`Iniciando DFS: ${startCity}`);
         
         if (!cityGraph.hasCity(startCity)) {
-            alert("City does not exist in the graph");
+            alert("La ciudad no existe");
             return;
         }
         
@@ -76,10 +76,10 @@ document.addEventListener('DOMContentLoaded', () => {
     showRoutesButton.addEventListener('click', () => {
         shortestRoutesList.innerHTML = '';
         const startCity = startRouteInput.value.trim();
-        console.log(`Start Dijkstra: ${startCity}`);
+        console.log(`Iniciando Dijkstra: ${startCity}`);
 
         if (!cityGraph.hasCity(startCity)) {
-            alert("City does not exist in the graph");
+            alert("La ciudad no existe");
             return;
         }
 

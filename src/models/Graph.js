@@ -1,4 +1,3 @@
-
 import { LinkedList } from "./LinkedList/LinkedList.js";
 
 export default class Graph {
@@ -38,7 +37,7 @@ export default class Graph {
     #dfs(city, visited, previousCity = null, previousDistance = 0, callback) {
         if (!visited.has(city)) {
             if (previousCity !== null) {
-                callback(`${previousCity} -> ${city} (Distance: ${previousDistance})`);
+                callback(`${previousCity} -> ${city} (Distancia: ${previousDistance})`);
             } else {
                 callback(city);
             }
@@ -57,49 +56,60 @@ export default class Graph {
         }
     }
 
-    dijkstra(startCity) {
-        const distances = {};
-        const visited = new Set();
-        const unvisited = new Set(this.#cityMap.keys());
-        
-        // Inicializa distancia
-        for (const city of this.#cityMap.keys()) {
-            distances[city] = Infinity;
-        }
-        distances[startCity] = 0;
+    dijkstra(verticeInit) {
+        //Inicialización de estructuras
+        let conjuntoVertices = []; //Conjunto de vértices del grafo
+        let verticesRestantes = []; //Conjunto de los vértices restantes
+        let vertices = []; //Vértice
+        let distancias = []; //Matriz unidimensional de distancias
+        let distanciasProvisorias = [];// Matriz unidimensional para guardar datos temporales
+        let indiceInicial; //Indice del vértice inicial
 
-        while (unvisited.size > 0) {
-            //Encuentra el nodo no visitado con la distancia más pequeña
-            let currentCity = null;
-            for (const city of unvisited) {
-                if (currentCity === null || distances[city] < distances[currentCity]) {
-                    currentCity = city;
+        // Configurar valores iniciales en la matriz de adyacencia
+        for (let i = 0; i < this.#adjacencyList.length; i++) {
+            for (let j = 0; j < this.#adjacencyList.length; j++) {
+                if (this.#adjacencyList[i][j] === undefined) {
+                    this.#adjacencyList[i][j] = 10000; // Infinito
                 }
             }
+        }
 
-            if (distances[currentCity] === Infinity) {
-                break;
-            }
+        // Inicializar distancias y conjuntos de vértices
+        for (let i = 0; i < this.#adjacencyList.length; i++) {
+            vertices[i] = i; // v1 => 0, v2 => 1, v3 => 2, etc.
+            verticesRestantes[i] = vertices[i]; // Todos los vértices se encuentran aquí
+            distancias[i] = 10000; // Todas las distancias inician en infinito
+        }
 
-            unvisited.delete(currentCity);
-            visited.add(currentCity);
+        // Configuración del vértice inicial
+        indiceInicial = this.#cityMap.get(verticeInit);
+        distancias[indiceInicial] = 0;
+        distanciasProvisorias = [...distancias];
 
-            //Actualiza distancias vecinas
-            const currentIndex = this.#cityMap.get(currentCity);
-            const neighbors = this.#vertices[currentIndex];
-            let currentNode = neighbors.getElementAt(0);
-            while (currentNode !== null) {
-                const neighborCity = currentNode.value.name;
-                if (!visited.has(neighborCity)) {
-                    const newDistance = distances[currentCity] + currentNode.value.distance;
-                    if (newDistance < distances[neighborCity]) {
-                        distances[neighborCity] = newDistance;
+        // Algoritmo de Dijkstra
+        while (conjuntoVertices.length !== this.#adjacencyList.length) {
+            let minimo = Math.min(...distanciasProvisorias.filter(value => value !== null));
+            let indice = distanciasProvisorias.indexOf(minimo);
+            conjuntoVertices.push(minimo);
+
+            for (let i = 0; i < distancias.length; i++) {
+                if (this.#adjacencyList[indice][i] !== 10000) {
+                    let suma = distancias[indice] + this.#adjacencyList[indice][i];
+                    if (distancias[i] > suma) {
+                        distancias[i] = suma;
                     }
                 }
-                currentNode = currentNode.next;
             }
+
+            distanciasProvisorias[indice] = null;
         }
 
-        return distances;
+        //Conversión de indices a nombres de ciudades
+        let resultado = {};
+        this.#cityMap.forEach((index, vertex) => {
+            resultado[vertex] = distancias[index];
+        });
+
+        return resultado;
     }
 }
